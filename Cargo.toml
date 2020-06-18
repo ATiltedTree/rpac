@@ -1,0 +1,19 @@
+[package]
+name = "rpac"
+description = "A pacman re-implementation in rust with AUR support"
+version = "0.1.0"
+authors = ["Tilmann Meyer <allescrafterx@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+alpm = "0.9.0"
+serde = { version = "1.0.112", features = ["derive"] }
+toml = "0.5.6"
+indicatif = "0.15.0"
+dialoguer = "0.6.2"
+raur = "2.0.2"
+
+[dependencies.clap]
+git = "ssh://git@github.com/clap-rs/clap.git"
+
+

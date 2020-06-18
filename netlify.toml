@@ -1,0 +1,7 @@
+[build]
+base = "docs"
+publish = ".vuepress/dist"
+command = "npm i && npm run build:prod"
+
+[context.deploy-preview]
+command = "npm i && npm run build:dev"
