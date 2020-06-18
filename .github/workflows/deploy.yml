@@ -13,12 +13,6 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: Setup | Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
       - name: Setup | Cache cargo
         uses: actions/cache@v2
         with:
@@ -26,6 +20,12 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
           key: cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Setup | Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
       - name: Setup | Go
         uses: actions/setup-go@v2
         with:

@@ -13,8 +13,6 @@ jobs:
     steps:
       - name: Setup | Checkout
         uses: actions/checkout@v2
-        with:
-          submodules: true
       - name: Setup | Rust
         uses: actions-rs/toolchain@v1
         with:
@@ -27,14 +25,20 @@ jobs:
         with:
           command: fmt
           args: -- --check
+  super_lint:
+    name: Super Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup | Checkout
+        uses: actions/checkout@v2
+      - name: Build | Check
+        uses: github/super-linter@v2.0.0
   lint:
     name: Lint
     runs-on: ubuntu-latest
     steps:
       - name: Setup | Checkout
         uses: actions/checkout@v2
-        with:
-          submodules: true
       - name: Setup | Cache cargo
         uses: actions/cache@v2
         with:
@@ -60,8 +64,6 @@ jobs:
     steps:
       - name: Setup | Checkout
         uses: actions/checkout@v2
-        with:
-          submodules: true
       - name: Setup | Cache cargo
         uses: actions/cache@v2
         with:
@@ -97,8 +99,6 @@ jobs:
     steps:
       - name: Setup | Checkout
         uses: actions/checkout@v2
-        with:
-          submodules: true
       - name: Setup | Cache cargo
         uses: actions/cache@v2
         with:
