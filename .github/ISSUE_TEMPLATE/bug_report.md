@@ -4,7 +4,6 @@ about: Create a report to help us improve
 title: ''
 labels: ":bug: bug"
 assignees: ''
-
 ---
 
 #### Current Behavior
@@ -23,4 +22,4 @@ assignees: ''
 
 - OS: <!-- e.g. Windows, Linux, Darwin -->
 - Version <!-- e.g. 0.1.0, 0.2.0 -->
-- LZO Version: <!-- e.g. 2.10 -->
+- Rust Version: <!-- e.g. 2.10 -->
