@@ -1,0 +1,24 @@
+[[databases]]
+name          = "core"
+servers       = ["/etc/pacman.d/mirrorlist"]
+siglevel      = 0
+siglevel_mask = 0
+usage         = 0
+[[databases]]
+name          = "extra"
+servers       = ["/etc/pacman.d/mirrorlist"]
+siglevel      = 0
+siglevel_mask = 0
+usage         = 0
+[[databases]]
+name          = "community"
+servers       = ["/etc/pacman.d/mirrorlist"]
+siglevel      = 0
+siglevel_mask = 0
+usage         = 0
+[[databases]]
+name          = "multilib"
+servers       = ["/etc/pacman.d/mirrorlist"]
+siglevel      = 0
+siglevel_mask = 0
+usage         = 0

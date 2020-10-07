@@ -17,24 +17,11 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-          override: true
           components: rustfmt
           profile: minimal
+          override: true
       - name: Build | Check
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: -- --check
-  super_lint:
-    name: Super Lint
-    runs-on: ubuntu-latest
-    steps:
-      - name: Setup | Checkout
-        uses: actions/checkout@v2
-      - name: Build | Check
-        uses: github/super-linter@v2.0.0
-        env:
-          VALIDATE_JAVASCRIPT_STANDARD: false
+        run: cargo fmt -- --check
   lint:
     name: Lint
     runs-on: ubuntu-latest
@@ -53,13 +40,13 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-          override: true
           components: clippy
           profile: minimal
+          override: true
       - name: Build | Check
-        uses: actions-rs/clippy-check@v1
+        uses: actions-rs/cargo@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          command: clippy
   compile:
     name: Compile
     runs-on: ubuntu-latest
@@ -78,23 +65,19 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-          override: true
           profile: minimal
+          override: true
       - name: Build | Check
-        uses: actions-rs/cargo@v1
-        with:
-          command: check
+        run: cargo check 2>/dev/null
   test:
     name: Test
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux
     needs: [compile]
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - ubuntu-latest
-          - windows-latest
-          - macOS-latest
         rust:
           - stable
           - nightly
@@ -108,14 +91,14 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Setup | GCC
+        run: pacman --noconfirm -Sy gcc pkgconf
       - name: Setup | Rust
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.rust }}
-          override: true
           profile: minimal
+          override: true
       - name: Build | Check
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
+        run: cargo test

@@ -1,15 +1,37 @@
 [package]
-name = "rpac"
+authors = ["RPac contributors"]
+categories = ["command-line-utilities"]
 description = "A pacman re-implementation with AUR support"
-version = "0.1.0"
-authors = ["Tilmann Meyer <allescrafterx@gmail.com>"]
 edition = "2018"
+homepage = "https://rpac.netlify.app"
+include = ["/src", "/Cargo.*", "/README.md", "/LICENSE-*", "/build.rs"]
+keywords = ["archlinux", "aur", "pacman"]
+license = "MIT OR Apache-2.0"
+name = "rpac"
+readme = "README.md"
+repository = "https://github.com/ATiltedTree/rpac"
+version = "0.1.0"
 
 [dependencies]
-alpm = "0.9.0"
-serde = { version = "1.0.112", features = ["derive"] }
-toml = "0.5.6"
-indicatif = "0.15.0"
+clap = { git = "https://github.com/clap-rs/clap.git" }
+ctrlc = "3.1.6"
 dialoguer = "0.6.2"
-raur = "2.0.2"
-clap = "3.0.0-beta.1"
+enum_dispatch = "0.3.2"
+env_logger = "0.7.1"
+indicatif = "0.15.0"
+alpm = "0.10.1"
+raur = "3.0.1"
+regex = "1.3.9"
+toml = "0.5.6"
+users = "0.10.0"
+log = "0.4.11"
+path-absolutize = "3.0.6"
+
+[dependencies.serde]
+features = ["derive"]
+version = "1.0.114"
+
+[badges]
+is-it-maintained-issue-resolution = { repository = "ATiltedTree/rpac" }
+is-it-maintained-open-issues = { repository = "ATiltedTree/rpac" }
+maintenance = { status = "actively-developed" }

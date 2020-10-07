@@ -1,0 +1,35 @@
+# Maintainer: Tilmann Meyer <allescrafterx@gmail.com>
+pkgname=rpac
+pkgver=VERSION
+pkgrel=1
+pkgdesc="A pacman re-implementation with AUR support"
+arch=("x86_64")
+url="https://rpac.netlify.app"
+license=("MIT" "APACHE")
+depends=("pacman")
+makedepends=("rust")
+backup=("/etc/rpac.toml")
+source=(
+	"https://github.com/ATiltedTree/$pkgname/archive/v$pkgver.zip"
+	"rpac.toml"
+)
+sha256sums=(
+	""
+	""
+)
+
+build() {
+	cd "$pkgname-$pkgver"
+	cargo build --release --locked --all-features
+}
+
+check() {
+	cd "$pkgname-$pkgver"
+	cargo test --release --locked
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	install -Dm 755 target/release/${pkgname} -t "${pkgdir}/usr/bin"
+	install -Dm 644 ../rpac.toml -t /etc
+}
