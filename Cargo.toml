@@ -19,7 +19,7 @@ dialoguer = "0.6.2"
 enum_dispatch = "0.3.3"
 env_logger = "0.7.1"
 indicatif = "0.15.0"
-alpm =  { version = "0.10.2",features = [] }
+alpm =  { version = "0.10.3",features = [] }
 raur = "3.0.1"
 regex = "1.3.9"
 toml = "0.5.6"
