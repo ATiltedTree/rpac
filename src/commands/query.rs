@@ -153,9 +153,6 @@ impl CommandHandler for Command {
                 let handle = alpm_handle.borrow();
                 if self.targets.is_empty() {
                     let localdb = handle.localdb();
-                    // groups() actually returns all packages causing alpm to sigsegv because we
-                    // tell it that the data is actually a group allthough it is a packages.
-                    // TODO: Create issue in alpm crate
                     let groups = localdb
                         .groups()
                         .unwrap()
