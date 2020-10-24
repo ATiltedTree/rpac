@@ -36,7 +36,7 @@ impl CommandHandler for Command {
                     assert!(entry.path().join("desc").exists());
                     assert!(entry.path().join("files").exists())
                 }
-                todo!("Check conflicts");
+                todo!("Check package and file conflicts");
             }
         }
         if self.asdeps || self.asexplicit {

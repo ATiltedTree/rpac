@@ -1,12 +1,13 @@
-use alpm::{Alpm, AlpmList, Db, Package, PackageReason};
+use alpm::{Alpm, AlpmList, Db, Package, PackageReason, Usage};
 use clap::Clap;
 use path_absolutize::Absolutize;
 use std::{
     cell::RefCell,
+    io::Read,
     path::{Path, PathBuf},
 };
 
-use crate::{commands::CommandHandler, config::Config};
+use crate::{commands::CommandHandler, config::Config, utils::{Join,EnumFormatter,check}};
 
 /// Query operations
 #[derive(Clap, Clone)]
@@ -97,7 +98,7 @@ pub struct Command {
     #[clap(short = 't', long, parse(from_occurrences))]
     pub unrequired: isize,
     /// List outdated packages [filter]
-    #[clap(short, long)]
+    #[clap(short, long = "upgrades")]
     pub upgrade: bool,
     /// The packages to query
     #[clap()]
@@ -106,6 +107,19 @@ pub struct Command {
 
 impl CommandHandler for Command {
     fn handle(&self, alpm_handle: RefCell<Alpm>, config: Config) {
+        if self.foreign || self.native || self.upgrade {
+            let handle = alpm_handle.borrow();
+            let mut should_return = false;
+            for db in handle.syncdbs() {
+                if let Err(err) = db.is_valid() {
+                    println!("database '{}' is not valid ({})",db.name(),err);
+                    should_return = true;
+                }
+            }
+            if should_return {
+                return;
+            }
+        }
         match self {
             _search if self.search => {
                 let handle = alpm_handle.borrow();
@@ -186,8 +200,7 @@ impl CommandHandler for Command {
                         .unwrap()
                         .filter(|pkg| self.filter_package(pkg, handle.syncdbs()))
                     {
-                        // TODO: Implement full info print
-                        println!("{:?}", package.name())
+                        self.display_package(&package, &handle)
                     }
                 }
             }
@@ -213,11 +226,7 @@ impl CommandHandler for Command {
                             .files()
                             .files()
                             .iter()
-                            .map(|file| {
-                                let mut file = file.name().to_string();
-                                file.insert(0, '/');
-                                PathBuf::from(file)
-                            })
+                            .map(|file| PathBuf::from(format!("{}{}", handle.root(), file.name())))
                             .any(|package_file| package_file == file);
                         if is_owned {
                             println!(
@@ -231,11 +240,18 @@ impl CommandHandler for Command {
                 }
             }
             _ => {
-                // Query locale db with named
+                let handle = alpm_handle.borrow();
+                let packages = self
+                    .targets
+                    .iter()
+                    .filter_map(|target| handle.localdb().pkg(target).ok())
+                    .filter(|pkg| self.filter_package(pkg,handle.syncdbs()));
+                for package in packages {
+                    self.display_package(&package, &handle)
+                }
             }
         }
 
-        // Locality and upgrade cause check_syncdb?
     }
 }
 
@@ -255,6 +271,121 @@ impl Command {
             }
         } else {
             !(self.upgrade && package.sync_new_version(sync_dbs).is_some())
+        }
+    }
+
+    fn display_package(&self, package: &Package, handle: &Alpm) {
+        if self.info > 0 {
+            println!("Name : {}", package.name());
+            println!("Version : {}", package.version());
+            println!(
+                "Description : {}",
+                package.desc().map_or("None", |desc| desc)
+            );
+            println!("Architecture : {}", package.arch().map_or("None", |a| a));
+            println!("URL : {}", package.url().map_or("None", |p| p));
+            println!(
+                "Licenses : {}",
+                package.licenses().join(" ")
+            );
+            println!("Groups : {}", package.groups().join(" "));
+            println!(
+                "Provides : {}",
+                package.provides().join(" ")
+            );
+            println!(
+                "Depends On : {}",
+                package.depends().join(" ")
+            );
+            println!(
+                "Optional Deps : {}",
+                package.optdepends().join("\n")
+            );
+            println!(
+                "Required By : {}",
+                package.required_by().join(" ")
+            );
+            println!(
+                "Optional For : {}",
+                package.optional_for().join(" ")
+            );
+            println!(
+                "Conflicts With : {}",
+                package.conflicts().join(" ")
+            );
+            println!(
+                "Replaces : {}",
+                package.replaces().join(" ")
+            );
+            println!("Installed Size : {}", package.size());
+            println!("Packager : {}", package.packager().map_or("None", |p| p));
+            println!("Build Date : {}", package.build_date());
+            if let Some(date) = package.install_date() {
+                println!("Install Date : {}", date);
+            }
+            println!("Install Reason : {}",EnumFormatter::from(package.reason()));
+            println!("Install Script : {}", package.has_scriptlet());
+            println!("Validated By : {}", EnumFormatter::from(package.validation()));
+            println!();
+        }
+
+        if self.list {
+            for file in package.files().files() {
+                if !self.quiet {
+                    print!("{} ", package.name())
+                }
+                println!("{}{}", handle.root(), file.name())
+            }
+        }
+
+        if self.changelog {
+            if let Ok(mut changelog) = package.changelog() {
+                println!("Changelog for {}:", package.name());
+                let mut changelog_string = String::new();
+                changelog.read_to_string(&mut changelog_string).unwrap();
+                println!("{}", changelog_string);
+            }
+        }
+        if self.check > 0 {
+            let errors = if self.check == 1 {
+                check(false, package, &handle)
+            } else {
+                check(true, package, &handle)
+            };
+
+            if errors != 0 {
+                println!("{}: {} total files",package.name(), package.files().files().len());
+                println!("{} missing files",errors);
+            }
+        }
+
+        if !self.info > 0 && !self.list && !self.changelog && !self.check > 0 {
+            if !self.quiet {
+                print!("{} {}", package.name(), package.version());
+                if self.upgrade {
+                    print!(
+                        " -> {}",
+                        package
+                            .sync_new_version(handle.syncdbs())
+                            .unwrap()
+                            .version()
+                    );
+
+                    if package.should_ignore()
+                        || !package
+                            .db()
+                            .unwrap()
+                            .usage()
+                            .unwrap()
+                            .contains(Usage::UPGRADE)
+                    {
+                        print!(" [ignored]");
+                    }
+                }
+                println!();
+            } else {
+                println!("{}", package.name());
+            }
         }
     }
 }
