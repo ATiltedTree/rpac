@@ -1,1 +1,1 @@
-# RPac - a package manager (WIP)
+# NO LONGER DEVELOPED! IF YOU WANT A AUR HELPER IN RUST, CHECK OUT [PARU](https://github.com/Morganamilo/paru). IT DOES EVERYTHING I WANTED RPAC TO DO.
